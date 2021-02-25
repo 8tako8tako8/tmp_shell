@@ -1,6 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "pwd.h"
 
 void    ft_pwd(void)
 {
@@ -16,9 +14,4 @@ void    ft_pwd(void)
     if (!(getcwd(path, 100)))
         exit(1);
     printf("%s\n", path);
-}
-
-int main()
-{
-    ft_pwd();
 }
