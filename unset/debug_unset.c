@@ -95,7 +95,6 @@ int     main()
     print_env(env);
     printf("\n");
     ft_unset(env, args);
-    del_env(&env, "aaa");
     print_env(env);
 
     system("leaks a.out");
