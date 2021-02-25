@@ -4,8 +4,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+# include <sys/stat.h>
+#include "../libft/libft.h"
 
-void    ft_pwd(void);
+typedef struct      s_env
+{
+    char            *key;
+    char            *value;
+    struct s_env    *next;
+}                   t_env;
+
+void    ft_pwd(t_env *env);
+char    *get_value_in_env(t_env *env, char *dstkey);
 
 
 #endif
