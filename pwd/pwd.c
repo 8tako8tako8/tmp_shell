@@ -24,13 +24,12 @@ void    ft_pwd(t_env *env)
         i++;
     }
     pwd_value = get_value_in_env(env, "PWD");
-    printf("%s\n", pwd_value);
-/*     if (is_symlink(pwd_value))
+    if (is_symlink(pwd_value))
     {
         printf("%s\n", pwd_value);
         return ;
     }
-    if (!(getcwd(path, 100)))//全て上で済むかも
+    if (!(getcwd(path, 100)))
         exit(1);
-    printf("%s\n", path); */
+    printf("%s\n", path);
 }

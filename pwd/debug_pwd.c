@@ -94,4 +94,6 @@ int main()
     
     env = set_envlst();
     ft_pwd(env);
+    
+    system("leaks a.out");
 }
