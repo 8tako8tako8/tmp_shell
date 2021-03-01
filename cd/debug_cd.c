@@ -69,7 +69,7 @@ void        add_envlst_back(t_env **env, t_env *new_env)
     curr_env->next = new_env;
 }
 
-t_env        *set_envlst(void)
+t_env        *set_envlst(char *pwd)
 {
     t_env           *env;
     t_env           *new_env;
@@ -84,10 +84,17 @@ t_env        *set_envlst(void)
         add_envlst_back(&env, new_env);
         i++;
     }
+    if (*environ == NULL)
+    {
+        new_env = create_new_envlst(ft_strjoin("PWD=", pwd));
+        add_envlst_back(&env, new_env);
+        new_env = create_new_envlst("OLDPWD");
+        add_envlst_back(&env, new_env);
+    }
     return (env);
 }
 
-int    is_symlink(char *path)
+/* int    is_symlink(char *path)
 {
     struct stat     st;
 
@@ -96,7 +103,7 @@ int    is_symlink(char *path)
     if ((st.st_mode & S_IFMT) == S_IFLNK)
         return (1);
     return (0);
-}
+} */
 
 void        print_env(t_env *env)
 {
@@ -110,11 +117,16 @@ void        print_env(t_env *env)
 int     main()
 {
     t_env   *env;
+    char    *pwd;
     char    *args[] = {
-        "cd", NULL
+        "cd", "../cd/test/../", NULL
     };
-    env = set_envlst();
-    ft_cd(env, args);
+
+    pwd = set_pwd();
+    env = set_envlst(pwd);
+    ft_cd(env, pwd, args);
+
+    //printf("\n");
 
     print_env(env);
     //system("leaks a.out");

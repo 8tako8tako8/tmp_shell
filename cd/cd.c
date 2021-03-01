@@ -21,7 +21,7 @@ void    update_env(t_env **env, char *dstkey, char *dstvalue)
     }
 }
 
-void    ft_cd(t_env *env, char **args)
+void    ft_cd(t_env *env, char *pwd, char **args)
 {
     char    *path;
     char    *old_pwd;
@@ -43,7 +43,7 @@ void    ft_cd(t_env *env, char **args)
     }
     else if (args[2])
     {
-        printf("cd: too many arguments\n");
+        printf("cd: too many arguments\n");//bashだとエラーにならないがzshだと出るので対応しておいた
         exit(1);
     }
     else//ホームディレクトリ以外
@@ -57,7 +57,9 @@ void    ft_cd(t_env *env, char **args)
     else
     {
         //新OLDPWD用にvalueを保管(unsetされているとNULLになるので、別にPWD,OLDPWDを保管しておいた方がいいかも)
-        old_pwd = get_value_in_env(env, "PWD");
+        //old_pwd = get_value_in_env(env, "PWD");
+        old_pwd = ft_strdup(pwd);
+
         //絶対パスならそのまま、相対パスなら旧PWDと組み合わせてパス作り
         if (path[0] == '/')
             new_pwd = ft_strdup(path);
@@ -76,7 +78,7 @@ void    ft_cd(t_env *env, char **args)
         update_env(&env, "PWD", cwd); */
         //print_env(env);
         free(old_pwd);
-        free(new_pwd);
+        //free(new_pwd);フリーするとバグ発生なぜ？
         free(path);
     }
 }

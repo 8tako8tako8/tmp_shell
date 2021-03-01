@@ -22,9 +22,9 @@ char    *get_abs_path(char *base, char *path)
     char    *rp;
 
     if (path[0] == '/')
-        return (a_path = ft_strdup(path));
+        return (ft_strdup(path));
     if (!ft_strcmp(path, ".") || !ft_strcmp(path, "./"))
-        return (a_path = ft_strdup(base));
+        return (ft_strdup(base));
     bp = base + ft_strlen(base);
     if (*(bp - 1) == '/')
         bp--;
@@ -52,6 +52,7 @@ char    *get_abs_path(char *base, char *path)
     rp = a_path + (bp - base);
     *rp++ = '/';
     ft_strlcpy(rp, pp, ft_strlen(pp) + 10);
+    *(rp + ft_strlen(pp)) = '\0'; 
     return (a_path);
 }
 
@@ -64,11 +65,14 @@ void    del_dot_dot_slash(char **path, int i)
     tmp = *path;
     while (tmp[j] != '/')
         j--;
-    if (!(*path = malloc(ft_strlen(tmp) - (i - j + 2))))
+    if (!(*path = malloc(ft_strlen(tmp))))
         exit(1);
     ft_strncpy(*path, tmp, j + 1);
     if (*(tmp + i + 3) != '\0')
-        ft_strlcpy(*path + j + 1, tmp + i + 3, ft_strlen(tmp + i + 3) + 10);
+    {
+        ft_strlcpy(*path + j + 1, tmp + i + 3, ft_strlen(tmp));
+        (*path)[j + ft_strlen(tmp + i + 3)] = '\0';
+    }
     free(tmp);
 }
 
@@ -77,11 +81,14 @@ void    del_dot_slash(char **path, int i)
     char    *tmp;
 
     tmp = *path;
-    if (!(*path = malloc(ft_strlen(tmp) - 2)))
+    if (!(*path = malloc(ft_strlen(tmp) - 1)))
         exit(1);
     ft_strncpy(*path, tmp, i);
     if (*(tmp + i + 2) != '\0')
-        ft_strlcpy(*path + i, tmp + i + 2, ft_strlen(tmp + i + 2) + 10);
+    {
+        ft_strlcpy(*path + i, tmp + i + 2, ft_strlen(tmp));
+        (*path)[i + ft_strlen(tmp + i + 2)] = '\0';
+    }
     free(tmp);
 }
 

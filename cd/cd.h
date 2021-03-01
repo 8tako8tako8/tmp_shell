@@ -15,7 +15,7 @@ typedef struct      s_env
     struct s_env    *next;
 }                   t_env;
 
-void    ft_cd(t_env *env, char **args);
+void    ft_cd(t_env *env, char *pwd, char **args);
 void    update_env(t_env **env, char *dstkey, char *dstvalue);
 
 void    ft_strncpy(char *dst, char *src, size_t n);
@@ -25,6 +25,8 @@ void    del_dot_dot_slash(char **path, int i);
 void    del_dot_slash(char **path, int i);
 char    *correct_abs_path(char *path);
 char    *get_path_after_moving(char *oldpwd, char *dstpath);
+
+char    *set_pwd(void);
 
 char    *get_value_in_env(t_env *env, char *dstkey);
 int     ft_strcmp(const char *s1, const char *s2);
