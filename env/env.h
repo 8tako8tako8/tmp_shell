@@ -14,7 +14,7 @@ typedef struct      s_env
     struct s_env    *next;
 }                   t_env;
 
-void    ft_env(t_env *env);
+void    ft_env(t_env *env, char **args);
 
 
 #endif

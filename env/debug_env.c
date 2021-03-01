@@ -69,9 +69,11 @@ t_env        *set_envlst(void)
 int     main()
 {
     t_env   *env;
-
+    char    *args[] = {
+        "env", ".", NULL
+    };
     env = set_envlst();
-    ft_env(env);
+    ft_env(env, args);
 
-    system("leaks a.out");
+    //system("leaks a.out");
 }
