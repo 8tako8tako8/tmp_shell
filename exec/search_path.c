@@ -11,7 +11,16 @@ char	*extract_env_path(t_env *env)
 	return (NULL);
 }
 
-int		exist_file(char *path)
+void	check_executable(struct stat *st)
+{
+	if ((st->st_mode & S_IXUSR) != S_IXUSR)//実行権限があるか？
+	{
+		printf("Permission denied\n");
+		exit(1);
+	}
+}
+
+int		is_executable_cmd(char *path)
 {
 	struct stat		st;
 
@@ -19,13 +28,18 @@ int		exist_file(char *path)
 		return (0);
 	if (S_ISLNK(st.st_mode))//シンボリックリンクであるか？
 	{
-		if ((st.st_mode & S_IXUSR) != S_IXUSR || stat(path, &st) == -1
-		|| S_ISDIR(st.st_mode) || (st.st_mode & S_IXUSR) != S_IXUSR)//実行権限があるか？ディレクトリでないか？実行権限があるか？
+		if (stat(path, &st) == -1)
+			exit(1);//エラーメッセージとfree
+		if (S_ISDIR(st.st_mode))//ディレクトリでないか？
 			return (0);
+		check_executable(&st);
 		return (1);
 	}
-	else if (S_ISREG(st.st_mode) && (st.st_mode & S_IXUSR) == S_IXUSR)//通常のファイルであるか？実行権限があるか？
+	else if (S_ISREG(st.st_mode))//通常のファイルであるか？
+	{
+		check_executable(&st);
 		return (1);
+	}
 	return (0);
 }
 
@@ -49,7 +63,7 @@ char	*search_cmd(t_env *env, char *cmd)
 		if (!(ret_path = ft_strjoin(tmp, cmd)))
 			exit(1);//エラーメッセージ and free必要
 		free(tmp);
-		if (exist_file(ret_path))
+		if (is_executable_cmd(ret_path))
 			return (ret_path);
 		i++;
 	}

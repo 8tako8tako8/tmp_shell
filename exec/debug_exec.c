@@ -95,13 +95,15 @@ t_env	*create_envlst(void)
 int		main(int argc, char *argv[])
 {
 	t_env	*env;
-	char	*args[] = {"/bin/ls", NULL};
+	//char	*args[] = {"/bin/ls", NULL};
 	//char	*args[] = {"/bin/ls", "-a", NULL};
 	//char	*args[] = {"./hello", NULL};
-	//char	*args[] = {"hello", NULL};
+	char	*args[] = {"hello", NULL};
 	//char	*args[] = {"ls", NULL};
 	//char	*args[] = {"ls", "-a", NULL};
 	//char	*args[] = {"cat", "exec.c", NULL};
+	//char	*args[] = {"./s_hello", NULL};
+	//char	*args[] = {"s_hello", NULL};
 
 	env = create_envlst();
 	exec_cmd(args, env);

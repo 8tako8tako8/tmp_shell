@@ -63,8 +63,6 @@ void	exec_cmd(char **args, t_env *env)
 			printf("command not found\n");
 			exit(1);//エラーメッセージ and free必要
 		}
-		free(path);
-		free_two_dim_ary(new_environ);
 	}
 	else
 		waitpid(pid, &status, WUNTRACED);//親プロセスは子プロセスの終了を待つ
