@@ -189,6 +189,7 @@ int     main()
 {
 	t_env   *env;
 	char    *args[] = {"cd", ".././../", NULL};
+	char    *args2[] = {"pwd", NULL};
 
 	env = create_envlst();
 	print_env(env);
@@ -198,6 +199,10 @@ int     main()
 	printf("\n");
 
 	print_env(env);
+
+	printf("\n");
+
+	ft_pwd(args2);
 
 	system("leaks a.out");
 }

@@ -16,6 +16,7 @@ typedef struct		s_env
 }					t_env;
 
 void	ft_cd(t_env *env, char **args);
+void	ft_pwd(char **args);
 
 //デバッグ用
 void	update_env_value(t_env **env, char *dstkey, char *dstvalue);
