@@ -18,6 +18,7 @@ t_env		*create_envlst(void);
 void		increment_shlvl(t_env **env);
 
 //デバッグ用
+void		update_env_value(t_env **env, char *dstkey, char *dstvalue);
 void		print_env(t_env *env);
 int			ft_strcmp(const char *s1, const char *s2);
 

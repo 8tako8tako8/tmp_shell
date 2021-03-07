@@ -51,24 +51,27 @@ int			ft_atoi_ex(const char *str)
 
 void	increment_shlvl(t_env **env)
 {
+	t_env	*curr_env;
 	int		shlvl;
 	char	*a_shlvl;
 
-	while (*env != NULL)
+	curr_env = *env;
+	while (curr_env != NULL)
 	{
-		if (!ft_strcmp("SHLVL", (*env)->key))
+		if (!ft_strcmp("SHLVL", curr_env->key))
 		{
-			shlvl = ft_atoi_ex((*env)->value) + 1;
+			shlvl = ft_atoi_ex(curr_env->value) + 1;
 			a_shlvl = ft_itoa(shlvl);
 			//exportで作るvalue上書き関数
 			if (shlvl == 0 || shlvl > 999)//"1"に書き換え
-				printf("shlvl: %d, a_shlvl: %s\n", shlvl, a_shlvl);
+				update_env_value(env, "SHLVL", "1");
 			else if (shlvl < 0)//"0"に書き換え
-				printf("shlvl: %d, a_shlvl: %s\n", shlvl, a_shlvl);
+				update_env_value(env, "SHLVL", "0");
 			else//"正の整数に書き換え"
-				printf("shlvl: %d, a_shlvl: %s\n", shlvl, a_shlvl);
+				update_env_value(env, "SHLVL", a_shlvl);
+			free(a_shlvl);
 			return ;
 		}
-		*env = (*env)->next;
+		curr_env = curr_env->next;
 	}
 }
