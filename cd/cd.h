@@ -8,29 +8,28 @@
 # include <sys/stat.h>
 # include "../libft/libft.h"
 
-typedef struct      s_env
+typedef struct		s_env
 {
-    char            *key;
-    char            *value;
-    struct s_env    *next;
-}                   t_env;
+	char			*key;
+	char			*value;
+	struct s_env	*next;
+}					t_env;
 
-void    ft_cd(t_env *env, char *pwd, char **args);
-void    update_env(t_env **env, char *dstkey, char *dstvalue);
+void	ft_cd(t_env *env, char **args);
 
-void    ft_strncpy(char *dst, char *src, size_t n);
-int     ft_strcmp(const char *s1, const char *s2);
-char    *get_abs_path(char *base, char *path);
-void    del_dot_dot_slash(char **path, int i);
-void    del_dot_slash(char **path, int i);
-char    *correct_abs_path(char *path);
-char    *get_path_after_moving(char *oldpwd, char *dstpath);
-
-char    *set_pwd(void);
-
-char    *get_value_in_env(t_env *env, char *dstkey);
-int     ft_strcmp(const char *s1, const char *s2);
-int     is_symlink(char *path);
-void    print_env(t_env *env);
+//デバッグ用
+void	update_env_value(t_env **env, char *dstkey, char *dstvalue);
+int		ft_strcmp(const char *s1, const char *s2);
+char	*get_value_in_env(t_env *env, char *dstkey);
+char	*get_cwd(void);
+void	add_pwd_to_envlst(t_env **env);
+void	add_oldpwd_to_envlst(t_env **env);
+void	add_shlvl_to_envlst(t_env **env);
+t_env	*get_last_env(t_env *env);
+void	add_envlst_back(t_env **env, t_env *new_env);
+t_env	*create_new_envlst(char *str);
+void	check_if_pwds_and_shlvl_exist(char *environ, int *pwd_flag, int *oldpwd_flag, int *shlvl_flag);
+t_env	*create_envlst(void);
+void	print_env(t_env *env);
 
 #endif
