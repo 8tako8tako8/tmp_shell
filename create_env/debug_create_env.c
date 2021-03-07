@@ -25,7 +25,7 @@ int		main()
 	
 	env = create_envlst();
 	print_env(env);
-	increment_shlvl(&env);
+	//increment_shlvl(&env);
 	
-	//system("leaks a.out");
+	system("leaks a.out");
 }

@@ -1,6 +1,6 @@
 #include "create_env.h"
 
-char		*get_pwd(void)
+char		*get_cwd(void)
 {
 	char	*ret_pwd;
 
@@ -13,10 +13,13 @@ char		*get_pwd(void)
 void		add_pwd_to_envlst(t_env **env)
 {
 	t_env	*new_env;
+	char	*cwd;
 	char	*tmp;
 
-	new_env = create_new_envlst(tmp = ft_strjoin("PWD=", get_pwd()));
+	cwd = get_cwd();
+	new_env = create_new_envlst(tmp = ft_strjoin("PWD=", cwd));
 	add_envlst_back(env, new_env);
+	free(cwd);
 	free(tmp);
 }
 
