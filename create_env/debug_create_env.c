@@ -1,4 +1,14 @@
-#include "set_env.h"
+#include "create_env.h"
+
+int		ft_strcmp(const char *s1, const char *s2)
+{
+	size_t	i;
+
+	i = 0;
+	while (s1[i] && (s1[i] == s2[i]))
+		i++;
+	return (s1[i] - s2[i]);
+}
 
 void	print_env(t_env *env)
 {
@@ -15,6 +25,7 @@ int		main()
 	
 	env = create_envlst();
 	print_env(env);
-
+	increment_shlvl(&env);
+	
 	//system("leaks a.out");
 }
