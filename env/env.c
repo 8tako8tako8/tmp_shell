@@ -4,8 +4,8 @@ void    ft_env(t_env *env, char **args)
 {
     if (args[1])
     {
-        printf("cannot support arguments\n");
-        exit(1);
+        printf("Arguments are not supported\n");
+        exit(1);//エラーメッセージ and free必要
     }
     while (env != NULL)
     {
