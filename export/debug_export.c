@@ -152,21 +152,26 @@ void		print_env(t_env *env)
 	}
 }
 
-static void		free_envlst(t_env *env)
+static void		free_envlst(t_env **env)
 {
-	while (env != NULL)
+	t_env	*curr_lst;
+	t_env	*tmp;
+
+	curr_lst = *env;
+	while (curr_lst != NULL)
 	{
-		free(env->key);
-		env->key = NULL;
-		if (env->value)
+		free(curr_lst->key);
+		curr_lst->key = NULL;
+		if (curr_lst->value)
 		{
-			free(env->value);
-			env->value = NULL;
+			free(curr_lst->value);
+			curr_lst->value = NULL;
 		}
-		env = env->next;
+		tmp = curr_lst->next;
+		free(curr_lst);
+		curr_lst = NULL;
+		curr_lst = tmp;
 	}
-	free(env);
-	env = NULL;
 }
 
 int			main()
@@ -176,11 +181,11 @@ int			main()
 	char	*args2[] = {"export", NULL};
 
 	env = create_envlst();
-	print_env(env);
+	//print_env(env);
 	printf("\n");
-	//ft_export(&env, args);
+	ft_export(&env, args);
 	ft_export(&env, args2);
-	print_env(env);
-	//free_envlst(env);
-	system("leaks a.out");
+	//print_env(env);
+	free_envlst(&env);
+	//system("leaks a.out");
 }

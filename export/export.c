@@ -52,21 +52,26 @@ t_env			*ft_lst_merge_sort(t_env *list)
 	return (ft_merge_lst(ft_lst_merge_sort(list),ft_lst_merge_sort(sepa)));
 }
 
-static void		free_envlst(t_env *env)
+static void		free_envlst(t_env **env)
 {
-	while (env != NULL)
+	t_env	*curr_lst;
+	t_env	*tmp;
+
+	curr_lst = *env;
+	while (curr_lst != NULL)
 	{
-		free(env->key);
-		env->key = NULL;
-		if (env->value)
+		free(curr_lst->key);
+		curr_lst->key = NULL;
+		if (curr_lst->value)
 		{
-			free(env->value);
-			env->value = NULL;
+			free(curr_lst->value);
+			curr_lst->value = NULL;
 		}
-		env = env->next;
+		tmp = curr_lst->next;
+		free(curr_lst);
+		curr_lst = NULL;
+		curr_lst = tmp;
 	}
-	free(env);
-	env = NULL;
 }
 
 t_env		*copy_lst(t_env *lst)
@@ -122,7 +127,7 @@ void		ft_export_without_args(t_env **env)
 		}
 		tmp = tmp->next;
 	}
-	free_envlst(sorted_env);
+	free_envlst(&sorted_env);
 }
 
 int			search_key_in_env(t_env *env, char *str, char **key, char **value)
