@@ -144,11 +144,11 @@ void		print_env(t_env *env)
 
 int     main()
 {
-    t_env   *env;
-    char    *args[] = {"env", ".", NULL};
+	t_env   *env;
+	char    *args[] = {"env", ".", NULL};
 
-    env = create_envlst();
-    ft_env(env, args);
+	env = create_envlst();
+	ft_env(env, args);
 
-    system("leaks a.out");
+	system("leaks a.out");
 }
