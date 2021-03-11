@@ -79,7 +79,7 @@ t_env		*copy_lst(t_env *lst)
 	t_env	*newlst;
 
 	if (!(newlst = (t_env *)malloc(sizeof(t_env))))
-		exit(1);//エラーメッセージ and free必要
+		exit(1);//エラーメッセージ and free必要(exitで良いのか微妙)
 	newlst->key = ft_strdup((lst)->key);
 	newlst->value = ft_strdup((lst)->value);
 	newlst->next = NULL;
