@@ -45,13 +45,15 @@ void			ft_unset(t_env **env, char **args)
 	{
 		if (ft_strchr(args[i], '='))//"="がきたらエラー
 		{
-			printf("not a valid identifier\n");
-			exit(1);//エラーメッセージ and free必要
+			ft_putstr_fd("not a valid identifier\n", 2);
+			//status = 1
+			return ;
 		}
 		if (args[i][0] == '-')//オプションはエラーにしておく
 		{
-			printf("Options are not supported\n");
-			exit(1);//エラーメッセージ and free必要
+			ft_putstr_fd("Options are not supported\n", 2);
+			//status = 1
+			return ;
 		}
 		delete_env(env, args[i]);
 		i++;
