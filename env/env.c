@@ -4,7 +4,7 @@ void	ft_env(t_env *env, char **args)
 {
 	if (args[1])
 	{
-		printf("Arguments are not supported\n");
+		ft_putstr_fd("Arguments are not supported\n", 2);
 		//status = 1
 	}
 	while (env != NULL)
