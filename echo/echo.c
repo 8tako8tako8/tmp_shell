@@ -1,6 +1,6 @@
 #include "echo.h"
 
-int		is_n_option(char *str, int *n_option)
+static int		is_n_option(char *str, int *n_option)
 {
 	int		i;
 
@@ -17,7 +17,7 @@ int		is_n_option(char *str, int *n_option)
 	return (1);
 }
 
-void	ft_echo(char **args)
+void			ft_echo(char **args)
 {
 	int		n_option;
 	int		i;
@@ -37,4 +37,5 @@ void	ft_echo(char **args)
 	}
 	if (n_option == 0)
 		write(1, "\n", 1);
+	//status = 0
 }
