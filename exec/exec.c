@@ -61,7 +61,8 @@ void	exec_cmd(char **args, t_env *env)
 		if ((execve(path, args, new_environ)) < 0)
 		{
 			printf("command not found\n");
-			exit(1);//エラーメッセージ and free必要
+			//status = 127
+			exit(127);//エラーメッセージ and free必要
 		}
 	}
 	else
