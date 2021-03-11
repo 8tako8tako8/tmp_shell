@@ -6,6 +6,7 @@ void	ft_env(t_env *env, char **args)
 	{
 		ft_putstr_fd("Arguments are not supported\n", 2);
 		//status = 1
+		return ;
 	}
 	while (env != NULL)
 	{
