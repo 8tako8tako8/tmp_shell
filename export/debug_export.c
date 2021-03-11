@@ -178,6 +178,7 @@ int			main()
 {
 	t_env	*env;
 	char	*args[] = {"export", "ccc=111", "ccc=", "ddd=111", "ccc", NULL};
+	//char	*args[] = {"export", "ccc=111", "ccc+=2", "ddd=111", "ccc", NULL};
 	char	*args2[] = {"export", NULL};
 
 	env = create_envlst();
