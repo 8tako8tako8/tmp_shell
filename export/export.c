@@ -128,14 +128,17 @@ void		ft_export_without_args(t_env **env)
 		tmp = tmp->next;
 	}
 	free_envlst(&sorted_env);
+	//status = 0;
 }
 
 int			search_key_in_env(t_env *env, char *str, char **key, char **value)
 {
 	t_env	*curr_env;
 	char	*equal_ptr;
+	int		plus_flag;
 	char	*tmp;
 
+	plus_flag = 0;
 	if (!(equal_ptr = ft_strchr(str, '=')))
 	{
 		*key = ft_strdup(str);
@@ -143,7 +146,20 @@ int			search_key_in_env(t_env *env, char *str, char **key, char **value)
 	}
 	else
 	{
-		*key = ft_substr(str, 0, equal_ptr - str);
+		if (str == equal_ptr)
+		{
+			//print_error();
+			ft_putstr_fd("not a valid identifier\n", 2);
+			//status = 1;
+			return (-1);
+		}
+		if (*(equal_ptr - 1) == '+')
+		{
+			plus_flag = 1;
+			*key = ft_substr(str, 0, equal_ptr - str - 1);
+		}
+		else
+			*key = ft_substr(str, 0, equal_ptr - str);
 		*value = ft_strdup(equal_ptr + 1);
 	}
 	curr_env = env;
@@ -153,17 +169,73 @@ int			search_key_in_env(t_env *env, char *str, char **key, char **value)
 		{
 			if (*value != NULL)
 			{
-				tmp = curr_env->value;
-				curr_env->value = ft_strdup(*value);
-				if (tmp != NULL)
+				if (plus_flag)//追記する
 				{
-					free(tmp);
-					tmp = NULL;
+					//追記する関数
+					if (!curr_env->value)
+						curr_env->value = ft_strdup(*value);
+					else
+					{
+						tmp = curr_env->value;
+						curr_env->value = ft_strjoin(curr_env->value, *value);
+						if (tmp != NULL)
+						{
+							free(tmp);
+							tmp = NULL;
+						}
+					}
+				}
+				else
+				{
+					//上書きする関数
+					tmp = curr_env->value;
+					curr_env->value = ft_strdup(*value);
+					if (tmp != NULL)
+					{
+						free(tmp);
+						tmp = NULL;
+					}
 				}
 			}
 			return (1);
 		}
 		curr_env = curr_env->next;
+	}
+	return (0);
+}
+
+static t_env		*create_new_envlst_exp(char *str)
+{
+	t_env	*new_env;
+	char	*equal_ptr;
+
+	if (!(new_env = (t_env *)malloc(sizeof(t_env))))
+		exit(1);
+	if (!(equal_ptr = ft_strchr(str, '=')))
+	{
+		new_env->key = ft_strdup(str);
+		new_env->value = NULL;
+		new_env->next = NULL;
+	}
+	else
+	{
+		if (*(equal_ptr - 1) == '+')
+			new_env->key = ft_substr(str, 0, equal_ptr - str - 1);
+		else
+			new_env->key = ft_substr(str, 0, equal_ptr - str);
+		new_env->value = ft_strdup(equal_ptr + 1);
+		new_env->next = NULL;
+	}
+	return (new_env);
+}
+
+int			is_plus_existed_in_key(char *key)
+{
+	if (ft_strchr(key, '+'))
+	{
+		ft_putstr_fd("not a valid identifier\n", 2);
+		//status = 1;
+		return (1);
 	}
 	return (0);
 }
@@ -175,22 +247,35 @@ void		ft_export_with_args(t_env **env, char **args)
 	char	*value;
 	int		flag;
 	int		i;
+	int		search_key;
 
 	key = NULL;
 	value = NULL;
+	search_key = 0;
 	i = 1;
 	while (args[i])
 	{
-		if (!search_key_in_env(*env, args[i], &key, &value))
+		if (!(search_key = search_key_in_env(*env, args[i], &key, &value)))
 		{
-			new_env = create_new_envlst(args[i]);
+			new_env = create_new_envlst_exp(args[i]);
+			if (is_plus_existed_in_key(new_env->key))//keyに"+"があればエラー
+				return ;
 			add_envlst_back(env, new_env);
+		}
+		else if (search_key == -1)
+		{
+			//free
+			free(key);
+			if (value)
+				free(value);
+			return ;
 		}
 		i++;
 		free(key);
 		if (value)
 			free(value);
 	}
+	//status = 0;
 }
 
 void		ft_export(t_env **env, char **args)

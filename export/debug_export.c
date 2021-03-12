@@ -177,13 +177,14 @@ static void		free_envlst(t_env **env)
 int			main()
 {
 	t_env	*env;
-	char	*args[] = {"export", "ccc=111", "ccc=", "ddd=111", "ccc", NULL};
-	//char	*args[] = {"export", "ccc=111", "ccc+=2", "ddd=111", "ccc", NULL};
+	//char	*args[] = {"export", "ccc=111", "ccc=", "ddd=111", "ccc", NULL};
+	// char	*args[] = {"export", "ccc=1", "ccc+=2", "ddd+=aaa", "eee+=", "fff", "fff+=aaa", NULL};
+	// char	*args[] = {"export", "cc+c=1", NULL};
+	char	*args[] = {"export", "=ccc=1", NULL};
 	char	*args2[] = {"export", NULL};
 
 	env = create_envlst();
 	//print_env(env);
-	printf("\n");
 	ft_export(&env, args);
 	ft_export(&env, args2);
 	//print_env(env);
