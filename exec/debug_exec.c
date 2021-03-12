@@ -1,5 +1,32 @@
 #include "exec.h"
 
+void		print_error_and_set_status(char *error_msg, int status)
+{
+	ft_putendl_fd(error_msg, 2);//print_error(, str, error_msg);
+	//status = status;
+}
+
+void	print_error(char *cmd, char *arg, char *error_msg)
+{
+	ft_putstr_fd("minishell: ", 2);
+	ft_putstr_fd(cmd, 2);
+	ft_putstr_fd(": ", 2);
+	if (arg)
+	{
+		ft_putstr_fd("`", 2);
+		ft_putstr_fd(arg, 2);
+		ft_putstr_fd("'", 2);
+		ft_putstr_fd(": ", 2);
+	}
+	ft_putendl_fd(error_msg, 2);
+}
+
+void	print_error_and_exit(void)
+{
+	ft_putendl_fd(strerror(errno), 2);
+	exit(1);
+}
+
 int		ft_strcmp(const char *s1, const char *s2)
 {
 	size_t	i;
@@ -95,10 +122,10 @@ t_env	*create_envlst(void)
 int		main(int argc, char *argv[])
 {
 	t_env	*env;
-	//char	*args[] = {"/bin/ls", NULL};
+	char	*args[] = {"/bin/ls", NULL};
 	//char	*args[] = {"/bin/ls", "-a", NULL};
 	//char	*args[] = {"./hello", NULL};
-	char	*args[] = {"hello", NULL};
+	//char	*args[] = {"hello", NULL};
 	//char	*args[] = {"ls", NULL};
 	//char	*args[] = {"ls", "-a", NULL};
 	//char	*args[] = {"cat", "exec.c", NULL};

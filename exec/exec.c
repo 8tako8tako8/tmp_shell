@@ -26,14 +26,14 @@ char	**replace_environ(t_env *env)
 
 	lstsize = get_lstsize(env);
 	if (!(ret_environ = (char **)malloc(sizeof(char *) * (lstsize + 1))))
-		exit(1);//エラーメッセージ and free必要
+		print_error_and_exit();
 	i = 0;
 	while (i < lstsize)
 	{
 		if (!(tmp_environ = ft_strjoin(env->key, "=")))
-			exit(1);//エラーメッセージ and free必要
+			print_error_and_exit();
 		if (!(ret_environ[i] = ft_strjoin(tmp_environ, env->value)))
-			exit(1);//エラーメッセージ and free必要
+			print_error_and_exit();
 		free(tmp_environ);
 		env = env->next;
 		i++;
@@ -60,9 +60,8 @@ void	exec_cmd(char **args, t_env *env)
 			path = search_cmd(env, args[0]);//コマンドをサーチする
 		if ((execve(path, args, new_environ)) < 0)
 		{
-			printf("command not found\n");
-			//status = 127
-			exit(127);//エラーメッセージ and free必要
+			print_error_and_set_status("command not found", 127);
+			exit(127);
 		}
 	}
 	else
