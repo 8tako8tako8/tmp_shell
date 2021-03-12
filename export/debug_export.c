@@ -1,5 +1,11 @@
 #include "export.h"
 
+void		print_error_and_set_status(char *error_msg, int status)
+{
+	ft_putendl_fd(error_msg, 2);//print_error(, str, error_msg);
+	//status = status;
+}
+
 void		print_error(char *cmd, char *args, char *error_msg)
 {
 	ft_putstr_fd("minishell: ", 2);

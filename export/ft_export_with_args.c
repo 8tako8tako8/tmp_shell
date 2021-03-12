@@ -154,12 +154,6 @@ static t_env		*create_new_envlst_exp(char *str)
 	return (new_env);
 }
 
-void		print_error_and_set_status(char *error_msg, int status)
-{
-	ft_putendl_fd(error_msg, 2);//print_error(, str, error_msg);
-	//status = status;
-}
-
 void		ft_export_with_args(t_env **env, char **args)
 {
 	t_env	*new_env;
