@@ -1,5 +1,26 @@
 #include "export.h"
 
+void		print_error(char *cmd, char *args, char *error_msg)
+{
+	ft_putstr_fd("minishell: ", 2);
+	ft_putstr_fd(cmd, 2);
+	ft_putstr_fd(": ", 2);
+	if (args)
+	{
+		ft_putstr_fd("`", 2);
+		ft_putstr_fd(args, 2);
+		ft_putstr_fd("'", 2);
+		ft_putstr_fd(": ", 2);
+	}
+	ft_putendl_fd(error_msg, 2);
+}
+
+void	print_error_and_exit(void)
+{
+	ft_putendl_fd(strerror(errno), 2);
+	exit(1);
+}
+
 int			ft_strcmp(const char *s1, const char *s2)
 {
 	size_t  i;
@@ -177,10 +198,12 @@ static void		free_envlst(t_env **env)
 int			main()
 {
 	t_env	*env;
-	//char	*args[] = {"export", "ccc=111", "ccc=", "ddd=111", "ccc", NULL};
-	char	*args[] = {"export", "ccc", "ccc=1", "ccc=2", "ccc+=3", "ddd+=aaa", "eee=aaa", "eee+=", "fff", "fff+=aaa", NULL};
-	// char	*args[] = {"export", "cc+c=1", NULL};
-	//char	*args[] = {"export", "=ccc=1", NULL};
+	char	*args[] = {"export", "ccc=111", "ccc=", "ddd=111", "ccc", NULL};
+	//char	*args[] = {"export", "ccc=1", "ccc=2", "ccc+=3", "ddd+=aaa", "eee=aaa", "eee+=", "fff", "fff+=aaa", NULL};
+	//char	*args[] = {"export", "_ccc=1", "_cAB", "aB__=as", "a12+=aaa", NULL};
+	//char	*args[] = {"export", "_", NULL};
+	//char	*args[] = {"export", "1a=aaa", NULL};
+	//char	*args[] = {"export", "+a=aaa", NULL};
 	char	*args2[] = {"export", NULL};
 
 	env = create_envlst();
