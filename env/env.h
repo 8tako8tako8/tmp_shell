@@ -3,6 +3,7 @@
 
 # include <stdio.h>
 # include <string.h>
+# include <errno.h>
 # include <unistd.h>
 # include <stdlib.h>
 # include "../libft/libft.h"
@@ -17,6 +18,9 @@ typedef struct		s_env
 void	ft_env(t_env *env, char **args);
 
 //デバッグ用
+void	print_error_and_set_status(char *error_msg, int status);
+void	print_error(char *cmd, char *args, char *error_msg);
+void	print_error_and_exit(void);
 char	*get_cwd(void);
 void	add_pwd_to_envlst(t_env **env);
 void	add_oldpwd_to_envlst(t_env **env);
