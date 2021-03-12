@@ -1,25 +1,30 @@
 #include "create_env.h"
 
-void	update_env_value(t_env **env, char *dstkey, char *dstvalue)
+void		print_error_and_set_status(char *error_msg, int status)
 {
-	t_env	*curr_env;
-	char	*tmp;
+	ft_putendl_fd(error_msg, 2);//print_error(, str, error_msg);
+	//status = status;
+}
 
-	if (*env == NULL)
-		return ;
-	curr_env = *env;
-	while (curr_env != NULL)
+void	print_error(char *cmd, char *arg, char *error_msg)
+{
+	ft_putstr_fd("minishell: ", 2);
+	ft_putstr_fd(cmd, 2);
+	ft_putstr_fd(": ", 2);
+	if (arg)
 	{
-		if (ft_strcmp(curr_env->key, dstkey) == 0)
-		{
-			tmp = curr_env->value;
-			curr_env->value = ft_strdup(dstvalue);
-			if (tmp != NULL)
-				free(tmp);
-			return ;
-		}
-		curr_env = curr_env->next;
+		ft_putstr_fd("`", 2);
+		ft_putstr_fd(arg, 2);
+		ft_putstr_fd("'", 2);
+		ft_putstr_fd(": ", 2);
 	}
+	ft_putendl_fd(error_msg, 2);
+}
+
+void	print_error_and_exit(void)
+{
+	ft_putendl_fd(strerror(errno), 2);
+	exit(1);
 }
 
 int		ft_strcmp(const char *s1, const char *s2)

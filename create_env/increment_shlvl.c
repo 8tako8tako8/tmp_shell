@@ -1,6 +1,6 @@
 #include "create_env.h"
 
-static int	check_int_overflow(int sign, const char *str)
+static int			check_int_overflow(int sign, const char *str)
 {
 	int		digit;
 
@@ -9,16 +9,16 @@ static int	check_int_overflow(int sign, const char *str)
 		digit++;
 	if (digit > 10)
 		return (-1);
-	if ((sign == 1 && ft_strncmp(str, "2147483647", 19) > 0)
+	if ((sign == 1 && ft_strncmp(str, "2147483647", 10) > 0)
 		&& digit == 10)
 		return (-1);
-	if ((sign == -1 && ft_strncmp(str, "2147483648", 19) > 0)
+	if ((sign == -1 && ft_strncmp(str, "2147483648", 10) > 0)
 		&& digit == 10)
 		return (-1);
 	return (1);
 }
 
-int			ft_atoi_ex(const char *str)
+static int			ft_atoi_ex(const char *str)
 {
 	long long		number;
 	int				sign;
@@ -49,7 +49,29 @@ int			ft_atoi_ex(const char *str)
 	return (number * sign);
 }
 
-void	increment_shlvl(t_env **env)
+static void			update_env_value(t_env **env, char *dstkey, char *dstvalue)
+{
+	t_env	*curr_env;
+	char	*tmp;
+
+	if (*env == NULL)
+		return ;
+	curr_env = *env;
+	while (curr_env != NULL)
+	{
+		if (ft_strcmp(curr_env->key, dstkey) == 0)
+		{
+			tmp = curr_env->value;
+			curr_env->value = ft_strdup(dstvalue);
+			if (tmp != NULL)
+				free(tmp);
+			return ;
+		}
+		curr_env = curr_env->next;
+	}
+}
+
+void				increment_shlvl(t_env **env)
 {
 	t_env	*curr_env;
 	int		shlvl;

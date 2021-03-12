@@ -1,78 +1,12 @@
 #include "create_env.h"
 
-char		*get_cwd(void)
-{
-	char	*ret_pwd;
-
-    ret_pwd = ft_calloc(1024, sizeof(char));
-    if (!(getcwd(ret_pwd, 1024)))
-        exit(1);//エラーメッセージ and free必要
-	return (ret_pwd);
-}
-
-void		add_pwd_to_envlst(t_env **env)
-{
-	t_env	*new_env;
-	char	*cwd;
-	char	*tmp;
-
-	cwd = get_cwd();
-	new_env = create_new_envlst(tmp = ft_strjoin("PWD=", cwd));
-	add_envlst_back(env, new_env);
-	free(cwd);
-	free(tmp);
-}
-
-void		add_oldpwd_to_envlst(t_env **env)
-{
-	t_env	*new_env;
-
-	new_env = create_new_envlst("OLDPWD");
-	add_envlst_back(env, new_env);
-}
-
-void		add_shlvl_to_envlst(t_env **env)
-{
-	t_env	*new_env;
-
-	new_env = create_new_envlst("SHLVL=0");
-	add_envlst_back(env, new_env);
-}
-
-t_env	*get_last_env(t_env *env)
-{
-	t_env	*curr_env;
-
-	if (env == NULL)
-		return (NULL);
-	curr_env = env;
-	while (curr_env->next != NULL)
-		curr_env = curr_env->next;
-	return (curr_env);
-}
-
-void		add_envlst_back(t_env **env, t_env *new_env)
-{
-	t_env	*curr_env;
-
-	if (!env || !new_env)
-		return ;
-	if (!*env)
-	{
-		*env = new_env;
-		return ;
-	}
-	curr_env = get_last_env(*env);
-	curr_env->next = new_env;
-}
-
 t_env	*create_new_envlst(char *str)
 {
 	t_env	*new_env;
 	char	*equal_ptr;
 
 	if (!(new_env = (t_env *)malloc(sizeof(t_env))))
-		exit(1);
+		print_error_and_exit();
 	if (!(equal_ptr = ft_strchr(str, '=')))
 	{
 		new_env->key = ft_strdup(str);
@@ -88,7 +22,7 @@ t_env	*create_new_envlst(char *str)
 	return (new_env);
 }
 
-void		check_if_pwds_and_shlvl_exist(char *environ, int *pwd_flag, int *oldpwd_flag, int *shlvl_flag)
+static void		check_if_pwds_and_shlvl_exist(char *environ, int *pwd_flag, int *oldpwd_flag, int *shlvl_flag)
 {
 	if (!ft_strncmp("PWD=", environ, 4))
 		*pwd_flag = 1;
@@ -120,9 +54,12 @@ t_env			*create_envlst(void)
 	i = -1;
 	while (environ[++i])
 	{
-		check_if_pwds_and_shlvl_exist(environ[i], &pwd_flag, &oldpwd_flag, &shlvl_flag);
-		new_env = create_new_envlst(environ[i]);
-		add_envlst_back(&env, new_env);
+		if ((environ[i][0] != '_') || (ft_strlen(environ[i]) != 1))
+		{
+			check_if_pwds_and_shlvl_exist(environ[i], &pwd_flag, &oldpwd_flag, &shlvl_flag);
+			new_env = create_new_envlst(environ[i]);
+			add_envlst_back(&env, new_env);
+		}
 	}
 	if (!pwd_flag)
 		add_pwd_to_envlst(&env);
