@@ -12,6 +12,16 @@ typedef struct			s_command
 	pid_t				pid;
 }						t_command;
 
+int		ft_strcmp(const char *s1, const char *s2)
+{
+	size_t	i;
+
+	i = 0;
+	while (s1[i] && (s1[i] == s2[i]))
+		i++;
+	return (s1[i] - s2[i]);
+}
+
 //option: 0=normal, 1=pipe
 t_command			*create_new_cmdlst(char **token, int option)
 {
@@ -89,8 +99,20 @@ void				print_cmdlst(t_command *cmd)
 	}
 }
 
-static int			is_builtin(t_command *cmd)
+static int			is_builtin(char *arg)
 {
+	int		i;
+	char	*builtin_str[] = {
+		"echo", "cd", "pwd", "export", "unset", "env", "exit"
+	};
+
+	i = 0;
+	while (i < 7)
+	{
+		if (!ft_strcmp(arg, builtin_str[i]))
+			return (1);
+		i++;
+	}
 	return (0);
 }
 
@@ -103,13 +125,13 @@ static int			is_pipe(t_command *cmd)
 }
 
 void				replace_fd_in_child_proc(int is_pipe, int is_prev_pipe,
-	int *lastpipe, int *newpipe)
+	int *oldpipe, int *newpipe)
 {
 	if (is_prev_pipe)
 	{
-		close(lastpipe[1]);
-		dup2(lastpipe[0], 0);
-		close(lastpipe[0]);
+		close(oldpipe[1]);
+		dup2(oldpipe[0], 0);
+		close(oldpipe[0]);
 	}
 	if (is_pipe)
 	{
@@ -120,22 +142,22 @@ void				replace_fd_in_child_proc(int is_pipe, int is_prev_pipe,
 }
 
 void				close_and_update_fd_in_parent_proc(int is_pipe, int is_prev_pipe,
-	int *lastpipe, int *newpipe)
+	int *oldpipe, int *newpipe)
 {
 	if (is_prev_pipe)
 	{
-		close(lastpipe[0]);
-		close(lastpipe[1]);
+		close(oldpipe[0]);
+		close(oldpipe[1]);
 	}
 	if (is_pipe)
 	{
-		lastpipe[0] = newpipe[0];
-		lastpipe[1] = newpipe[1];
+		oldpipe[0] = newpipe[0];
+		oldpipe[1] = newpipe[1];
 	}
 }
 
 pid_t				start_command(char *argv[], int is_pipe,
-	int is_prev_pipe, int *lastpipe)
+	int is_prev_pipe, int *oldpipe)
 {
 	pid_t	pid;
 	int		newpipe[2];
@@ -145,25 +167,28 @@ pid_t				start_command(char *argv[], int is_pipe,
 	pid = fork();
 	if (pid == 0)//子プロセス
 	{
-		replace_fd_in_child_proc(is_pipe, is_prev_pipe, lastpipe, newpipe);
-		execvp(argv[0], argv);//exec_command();
+		replace_fd_in_child_proc(is_pipe, is_prev_pipe, oldpipe, newpipe);
+		if (is_builtin(argv[0]))
+			printf("execute buildin in pipe\n");//exec_builtin(argv);
+		else
+			execvp(argv[0], argv);//exec_command();
 	}
 	//親プロセス
-	close_and_update_fd_in_parent_proc(is_pipe, is_prev_pipe, lastpipe, newpipe);
+	close_and_update_fd_in_parent_proc(is_pipe, is_prev_pipe, oldpipe, newpipe);
 	return (pid);
 }
 
 t_command			*exec_cmd_without_pipeless_builtin(t_command *cmd)
 {
 	int			is_prev_pipe;
-	int			lastpipe[2];
+	int			oldpipe[2];
 
 	is_prev_pipe = 0;
-	lastpipe[0] = -1;
-	lastpipe[1] = -1;
+	oldpipe[0] = -1;
+	oldpipe[1] = -1;
 	while (cmd)
 	{
-		cmd->pid = start_command(cmd->argv, is_pipe(cmd), is_prev_pipe, lastpipe);
+		cmd->pid = start_command(cmd->argv, is_pipe(cmd), is_prev_pipe, oldpipe);
 		is_prev_pipe = is_pipe(cmd);
 		if (is_prev_pipe)
 			cmd = cmd->next;
@@ -187,11 +212,12 @@ void				exec_cmdlst(t_command *cmd)
 	curr_cmd = cmd;
 	while (curr_cmd)
 	{
-		if (is_builtin(curr_cmd) && !is_pipe(curr_cmd))
+		if (is_builtin(curr_cmd->argv[0]) && !is_pipe(curr_cmd))
 		{
 			/* パイプラインのない組み込みコマンドはシェル（親プロセス）が行う */
+			printf("execute pipeless builtin\n");
 			//exec_builtin(cmd->argv);
-			//cmd = cmd->next;
+			curr_cmd = curr_cmd->next;
 			continue ;
 		}
 		curr_cmd = exec_cmd_without_pipeless_builtin(curr_cmd);
