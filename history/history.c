@@ -1,5 +1,7 @@
 #include "./history.h"
 
+int		putchar_tc(int tc);
+
 // libft_ex
 
 void    ft_strncpy(char *dst, char *src, size_t n)
@@ -65,30 +67,29 @@ void	put_prompt(void)
 
 // get_cursor_position.c
 
-int	nbr_length(int n)
+static int		ft_digit(int n)
 {
-	int	i = 0;
+	int	digit;
 
-	if (n <= 0)
-		i++;
+	digit = 0;
 	while (n != 0)
 	{
-		n /= 10;
-		i++;
+		n = n / 10;
+		digit++;
 	}
-	return (i);
+	return (digit);
 }
 
 void	get_cursor_position(t_termcap *tc)
 {
 	char	buf[255];
 	int		ret;
-	int		temp = 0;
-	int		i;
 	int		first_flag;
+	int		i;
 
 	write(0, "\033[6n", 4);//カーソル位置がわかる
-	ret = read(0, buf, 254);
+	if ((ret = read(0, buf, 254)) == -1)
+		exit(1);//strerror
 	buf[ret] = '\0';
 	first_flag = 0;
 	i = 1;
@@ -97,25 +98,19 @@ void	get_cursor_position(t_termcap *tc)
 		if (ft_isdigit(buf[i]))//ft_isdigit
 		{
 			if (first_flag == 0)
-				tc->row = atoi(&buf[i]) - 1;
+			{
+				tc->row = ft_atoi(buf + i) - 1;
+				i += ft_digit(tc->row);
+				first_flag = 1;
+			}
 			else
 			{
-				temp = ft_atoi(&buf[i]);
-				tc->col = temp - 1;
+				tc->col = ft_atoi(buf + i) - 1;
+				i += ft_digit(tc->col);
 			}
-			first_flag = 1;
-			i += nbr_length(temp) - 1;
 		}
 		i++;
 	}
-}
-
-// ?????
-
-int		putchar_tc(int tc)
-{
-	write(1, &tc, 1);
-	return (0);
 }
 
 // move_cursor.c
@@ -142,7 +137,7 @@ void	move_cursor_to_right(t_termcap *tc)
 	tputs(s, 1, putchar_tc);
 }
 
-// edit_char_in_term.c
+// delete_char.c
 
 void	delete_char_in_term(t_termcap *tc)
 {
@@ -333,6 +328,12 @@ void	next_command(int c, t_termcap *tc, t_history **history, int *i)
 
 // read_line.c
 
+int		putchar_tc(int tc)
+{
+	write(1, &tc, 1);
+	return (0);
+}
+
 int		divide_cases_by_key(int c, t_termcap *tc, t_history **history, int *i)
 {
 	if (c == UP_ARROW)
@@ -398,7 +399,7 @@ void		read_line(t_history **history)
 		termcap.env = "xterm";
 	tgetent(entrybuf, termcap.env);
 	termcap.bufptr = stringbuf;	
-	termcap.move = tgetstr("cm", &(termcap.bufptr));//カーソル位置
+	termcap.move = tgetstr("cm", &(termcap.bufptr));//カーソルい移動
 	termcap.delete_char = tgetstr("dc", &(termcap.bufptr));//１文字削除
 	termcap.delete_line = tgetstr("dl", &(termcap.bufptr));//行削除
 	termcap.insert = tgetstr("im", &(termcap.bufptr));//挿入モード
@@ -430,7 +431,7 @@ void	print_history_str(t_history *history)
 		curr_history = curr_history->prev;
 	while (curr_history != NULL)
 	{
-		printf("\nstr: %s, strlen: %d\n", curr_history->str, (int)ft_strlen(curr_history->str));
+		printf("\nstr: %s\n", curr_history->str);
 		curr_history = curr_history->next;
 	}
 }
