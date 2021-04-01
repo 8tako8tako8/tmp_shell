@@ -1,92 +1,69 @@
-#include <termios.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <termcap.h>
-#include "../libft/libft.h"
+#include "./history.h"
 
-# define BACK_SPACE 127
-# define LEFT_ARROW 4479771
-# define RIGHT_ARROW 4414235
-# define UP_ARROW 4283163
-# define DOWN_ARROW 4348699
-# define EOF_KEY 4
-# define NEW_LINE 10
-# define PROMPT_SIZE 11
-
-typedef struct			s_history
-{
-	struct s_history	*prev;
-	struct s_history	*next;
-	char				*str;
-	int					strlen;
-}						t_history;
-
-typedef struct			s_termcap
-{
-	char				*env;
-	char				*bufptr;
-	char				*move;
-	char				*delete_char;
-	char				*delete_line;
-	char				*insert;
-	char				*uninsert;
-	int					row;
-	int					col;
-	int					max_pos;
-}						t_termcap;
+// libft_ex
 
 void    ft_strncpy(char *dst, char *src, size_t n)
 {
-    size_t  i;
+	size_t  i;
 
-    if (!src)
-        return ;
-    i = 0;
-    while (src[i] != '\0' && i < n)
-    {
-        dst[i] = src[i];
-        i++;
-    }
+	if (!src)
+		return ;
+	i = 0;
+	while (src[i] != '\0' && i < n)
+	{
+		dst[i] = src[i];
+		i++;
+	}
 }
 
-void    add_char_in_history(t_history *history, char c, int col)
+int		ft_strcmp(const char *s1, const char *s2)
+{
+	size_t	i;
+
+	i = 0;
+	while (s1[i] && (s1[i] == s2[i]))
+		i++;
+	return (s1[i] - s2[i]);
+}
+
+// add_char.c
+
+void    add_char_in_history(t_history **history, char c, int col)
 {
 	char	*tmp;
 	int		strlen;
 
-	tmp = history->str;
-	strlen = history->strlen;
-	if (!(history->str = (char *)malloc(sizeof(char) * (strlen + 2))))
+	tmp = (*history)->str;
+	strlen = ft_strlen((*history)->str);
+	if (!((*history)->str = (char *)malloc(sizeof(char) * (strlen + 2))))
 		exit(1);
-	ft_strncpy(history->str, tmp, col);
-	history->str[col] = c;
-	ft_strncpy(history->str + col + 1, tmp + col, strlen - col);
-	history->str[strlen + 1] = '\0';
-	history->strlen = strlen + 1;
+	ft_strncpy((*history)->str, tmp, col);
+	(*history)->str[col] = c;
+	ft_strncpy((*history)->str + col + 1, tmp + col, strlen - col);
+	(*history)->str[strlen + 1] = '\0';
 	free(tmp);
 }
 
-void    delete_char_in_history(t_history *history, int dstcol)
+void	putchar_and_incr_value(int c, t_termcap *tc)
 {
-	char	*tmp;
-	int		strlen;
-
-	tmp = history->str;
-	strlen = history->strlen;
-	if (!(history->str = (char *)malloc(sizeof(char) * strlen)))
-		exit(1);
-	ft_strncpy(history->str, tmp, dstcol);
-	ft_strncpy(history->str + dstcol, tmp + dstcol + 1, strlen - dstcol - 1);
-	history->str[strlen - 1] = '\0';
-	history->strlen = strlen - 1;
-	free(tmp);
+	(tc->max_pos)++;
+	write(1, &c, sizeof(c));
 }
+
+void	put_char(int c, t_termcap *tc, t_history **history)
+{
+	putchar_and_incr_value(c, tc);
+	add_char_in_history(history, (char)c, tc->col - PROMPT_SIZE);
+}
+
+// prompt.c
 
 void	put_prompt(void)
 {
 	write(1, "minishell$ ", PROMPT_SIZE);
 }
+
+// get_cursor_position.c
 
 int	nbr_length(int n)
 {
@@ -117,13 +94,13 @@ void	get_cursor_position(t_termcap *tc)
 	i = 1;
 	while (buf[i])
 	{
-		if ('0' <= buf[i] && buf[i] <= '9')//ft_isdigit
+		if (ft_isdigit(buf[i]))//ft_isdigit
 		{
 			if (first_flag == 0)
 				tc->row = atoi(&buf[i]) - 1;
 			else
 			{
-				temp = atoi(&buf[i]);
+				temp = ft_atoi(&buf[i]);
 				tc->col = temp - 1;
 			}
 			first_flag = 1;
@@ -133,11 +110,15 @@ void	get_cursor_position(t_termcap *tc)
 	}
 }
 
+// ?????
+
 int		putchar_tc(int tc)
 {
 	write(1, &tc, 1);
 	return (0);
 }
+
+// move_cursor.c
 
 void	move_cursor_to_left(t_termcap *tc)
 {
@@ -161,7 +142,9 @@ void	move_cursor_to_right(t_termcap *tc)
 	tputs(s, 1, putchar_tc);
 }
 
-void	delete_char(t_termcap *tc)
+// edit_char_in_term.c
+
+void	delete_char_in_term(t_termcap *tc)
 {
 	char	*s;
 
@@ -172,29 +155,31 @@ void	delete_char(t_termcap *tc)
 	tputs(tc->delete_char, 1, putchar_tc);
 }
 
-void	change_term_config(void)
+void    delete_char_in_history(t_history **history, int dstcol)
 {
-	struct termios	term;
-	
-	tcgetattr(0, &term);
-	term.c_lflag &= ~ICANON;
-	term.c_lflag &= ~ECHO;
-	term.c_cc[VMIN] = 1;
-	term.c_cc[VTIME] = 0;
-	tcsetattr(0, TCSANOW, &term);
+	char	*tmp;
+	int		strlen;
+
+	tmp = (*history)->str;
+	strlen = ft_strlen((*history)->str);
+	if (!((*history)->str = (char *)malloc(sizeof(char) * strlen)))
+		exit(1);
+	ft_strncpy((*history)->str, tmp, dstcol);
+	ft_strncpy((*history)->str + dstcol, tmp + dstcol + 1, strlen - dstcol - 1);
+	(*history)->str[strlen - 1] = '\0';
+	free(tmp);
 }
 
-void	putchar_and_incr_value(int c, t_termcap *tc)
+void	delete_char(t_termcap *tc, t_history **history)
 {
-	(tc->max_pos)++;
-	write(1, &c, sizeof(c));
+	if (tc->col != PROMPT_SIZE)
+	{
+		delete_char_in_term(tc);
+		delete_char_in_history(history, tc->col - PROMPT_SIZE);
+	}
 }
 
-void	init_max_pos_and_write_prompt(t_termcap *tc)
-{
-	tc->max_pos = PROMPT_SIZE;
-	put_prompt();
-}
+// move_history.c
 
 int		get_history_size(t_history **history)
 {
@@ -216,12 +201,17 @@ char	*get_history(t_history **history, int flag, int *i)
 	t_history		*curr_history;
 	int				j;
 
-	curr_history = *history;
 	if (flag == 1 && (get_history_size(history) - 1) > *i)
 		(*i)++;
-	else if (flag == -1 && *i > 0)
+	else if (flag == -1 && *i > 1)
 		(*i)--;
+	else if (flag == -1 && *i == 1)
+	{
+		(*i)--;
+		return (ft_strdup(""));
+	}
 	j = *i;
+	curr_history = *history;
 	while (j > 0)
 	{
 		curr_history = curr_history->next;
@@ -230,41 +220,54 @@ char	*get_history(t_history **history, int flag, int *i)
 	return (ft_strdup(curr_history->str));
 }
 
-void	move_previous_history(t_termcap *tc, t_history **history, int *i)
+void	replace_history_str(t_history **history, char *history_str)
 {
-	t_history	*curr_history;
-	char	*s;
-	char	*history_str;
 	char	*tmp;
 
-	tputs(tc->delete_line, 1, putchar_tc);
-	tc->col = 0;
-	tc->max_pos = PROMPT_SIZE;
-	s = tgoto(tc->move, tc->col, tc->row);
-	tputs(s, 1, putchar_tc);
-	put_prompt();
-
 	tmp = (*history)->str;
-	history_str = get_history(history, 1, i);
 	(*history)->str = history_str;
-	(*history)->strlen = ft_strlen(history_str);
 	free(tmp);
-	write(1, history_str, (*history)->strlen);
-
-/* 	tc->max_pos = PROMPT_SIZE + tmp_history->strlen; */
 }
 
-void	move_next_history(t_termcap *tc)
+void	move_previous_history(t_termcap *tc, t_history **history, int *i)
 {
 	char	*s;
-	
+	char	*history_str;
+	int		strlen;
+
 	tputs(tc->delete_line, 1, putchar_tc);
 	tc->col = 0;
 	tc->max_pos = PROMPT_SIZE;
 	s = tgoto(tc->move, tc->col, tc->row);
 	tputs(s, 1, putchar_tc);
 	put_prompt();
+	history_str = get_history(history, 1, i);
+	replace_history_str(history, history_str);
+	strlen = ft_strlen(history_str);
+	write(1, history_str, strlen);
+	tc->max_pos = PROMPT_SIZE + strlen;
 }
+
+void	move_next_history(t_termcap *tc, t_history **history, int *i)
+{
+	char	*s;
+	char	*history_str;
+	int		strlen;
+
+	tputs(tc->delete_line, 1, putchar_tc);
+	tc->col = 0;
+	tc->max_pos = PROMPT_SIZE;
+	s = tgoto(tc->move, tc->col, tc->row);
+	tputs(s, 1, putchar_tc);
+	put_prompt();
+	history_str = get_history(history, -1, i);
+	replace_history_str(history, history_str);
+	strlen = ft_strlen(history_str);
+	write(1, history_str, strlen);
+	tc->max_pos = PROMPT_SIZE + strlen;
+}
+
+// init_history.c
 
 t_history	*init_history(void)
 {
@@ -275,13 +278,14 @@ t_history	*init_history(void)
 	if (!(ret_history->str = (char *)malloc(sizeof(char))))
 		exit(1);
 	ret_history->str[0] = '\0';
-	ret_history->strlen = 0;
 	ret_history->prev = NULL;
 	ret_history->next = NULL;
 	return (ret_history);
 }
 
-void	add_new_history(t_history **history, t_history *new_history)
+// next_command.c
+
+void	add_front_new_history(t_history **history, t_history *new_history)
 {
 	t_history	*curr_history;
 
@@ -297,50 +301,69 @@ void	add_new_history(t_history **history, t_history *new_history)
 		curr_history = curr_history->prev;
 	curr_history->prev = new_history;
 	new_history->next = curr_history;
+	*history = new_history;
 }
 
-void	update_history(t_history **history)
+void	update_history(t_history **history, int *i)
 {
 	t_history	*new_history;
+	char		*tmp;
 
+	if (!ft_strcmp((*history)->str, ""))
+	{
+		return ;
+	}
 	new_history = init_history();
-	add_new_history(history, new_history);
-	while ((*history)->prev != NULL)
-		*history = (*history)->prev;
+	add_front_new_history(history, new_history);
+	*i = 0;
 }
+
+void	init_max_pos_and_write_prompt(t_termcap *tc)
+{
+	tc->max_pos = PROMPT_SIZE;
+	put_prompt();
+}
+
+void	next_command(int c, t_termcap *tc, t_history **history, int *i)
+{
+	putchar_and_incr_value(c, tc);
+	init_max_pos_and_write_prompt(tc);
+	update_history(history, i);
+}
+
+// read_line.c
 
 int		divide_cases_by_key(int c, t_termcap *tc, t_history **history, int *i)
 {
 	if (c == UP_ARROW)
-		move_previous_history(tc, history, i);//指定した位置以降を削除して履歴を表示、履歴がなければ何もしない
+		move_previous_history(tc, history, i);
 	else if (c == DOWN_ARROW)
-		move_next_history(tc);//指定した位置以降を削除して履歴を表示、履歴がなければ何もしない
+		move_next_history(tc, history, i);
 	else if (c == LEFT_ARROW)
 		move_cursor_to_left(tc);
 	else if (c == RIGHT_ARROW)
 		move_cursor_to_right(tc);
 	else if (c == BACK_SPACE)
-	{
-		if (tc->col != PROMPT_SIZE)
-		{
-			delete_char(tc);
-			delete_char_in_history(*history, tc->col - PROMPT_SIZE);
-		}
-	}
+		delete_char(tc, history);
 	else if (c == EOF_KEY)
-		return (0);
+		return (0);//debug用
 	else if (c == NEW_LINE)
-	{
-		putchar_and_incr_value(c, tc);
-		init_max_pos_and_write_prompt(tc);
-		update_history(history);
-	}
+		next_command(c, tc, history, i);
 	else
-	{
-		putchar_and_incr_value(c, tc);
-		add_char_in_history(*history, (char)c, tc->col - PROMPT_SIZE);
-	}
-	return (1);
+		put_char(c, tc, history);
+	return (1);//debug用
+}
+
+void	change_term_config(void)
+{
+	struct termios	term;
+	
+	tcgetattr(0, &term);
+	term.c_lflag &= ~ICANON;
+	term.c_lflag &= ~ECHO;
+	term.c_cc[VMIN] = 1;
+	term.c_cc[VTIME] = 0;
+	tcsetattr(0, TCSANOW, &term);
 }
 
 /* void	init_termcap(t_termcap *tc)
@@ -396,6 +419,8 @@ void		read_line(t_history **history)
 	tputs(termcap.uninsert, 1, putchar_tc);
 }
 
+// debug_history.c
+
 void	print_history_str(t_history *history)
 {
 	t_history	*curr_history;
@@ -405,7 +430,7 @@ void	print_history_str(t_history *history)
 		curr_history = curr_history->prev;
 	while (curr_history != NULL)
 	{
-		printf("\nstr: %s, strlen: %d\n", curr_history->str, curr_history->strlen);
+		printf("\nstr: %s, strlen: %d\n", curr_history->str, (int)ft_strlen(curr_history->str));
 		curr_history = curr_history->next;
 	}
 }
