@@ -193,38 +193,44 @@ int		get_history_size(t_history **history)
 	return (i);
 }
 
-t_history	*get_history(t_history **history, int flag, int *i)
+char	*get_history(t_history **history, int flag, int *i)
 {
 	t_history		*curr_history;
 	int				j;
 
-	while ((*history)->prev != NULL)
-		*history = (*history)->prev;
 	if (flag == 1 && (get_history_size(history) - 1) > *i)
 		(*i)++;
-	else if (flag == -1 && *i >= 1)
+	else if (flag == -1 && *i > 1)
 		(*i)--;
+	else if (flag == -1 && *i == 1)
+	{
+		(*i)--;
+		return (ft_strdup(""));
+	}
 	j = *i;
+	curr_history = *history;
 	while (j > 0)
 	{
-		*history = (*history)->next;
+		curr_history = curr_history->next;
 		j--;
 	}
-	return (*history);
+	return (ft_strdup(curr_history->str));
 }
 
-/* void	replace_history_str(t_history **history, char *history_str)
+void	replace_history_str(t_history **history, char *history_str)
 {
 	char	*tmp;
 
 	tmp = (*history)->str;
 	(*history)->str = history_str;
 	free(tmp);
-} */
+}
 
-void	move_previous_history(t_termcap *tc, t_history **history)
+void	move_previous_history(t_termcap *tc, t_history **history, int *i)
 {
 	char	*s;
+	char	*history_str;
+	int		strlen;
 
 	tputs(tc->delete_line, 1, putchar_tc);
 	tc->col = 0;
@@ -232,16 +238,19 @@ void	move_previous_history(t_termcap *tc, t_history **history)
 	s = tgoto(tc->move, tc->col, tc->row);
 	tputs(s, 1, putchar_tc);
 	put_prompt();
-	if ((*history)->next != NULL)
-		*history = (*history)->next;
-	write(1, (*history)->str, ft_strlen((*history)->str));
-	tc->max_pos = PROMPT_SIZE + ft_strlen((*history)->str);
+	history_str = get_history(history, 1, i);
+	replace_history_str(history, history_str);
+	strlen = ft_strlen(history_str);
+	write(1, history_str, strlen);
+	tc->max_pos = PROMPT_SIZE + strlen;
 	get_cursor_position(tc);
 }
 
-void	move_next_history(t_termcap *tc, t_history **history)
+void	move_next_history(t_termcap *tc, t_history **history, int *i)
 {
 	char	*s;
+	char	*history_str;
+	int		strlen;
 
 	tputs(tc->delete_line, 1, putchar_tc);
 	tc->col = 0;
@@ -249,10 +258,11 @@ void	move_next_history(t_termcap *tc, t_history **history)
 	s = tgoto(tc->move, tc->col, tc->row);
 	tputs(s, 1, putchar_tc);
 	put_prompt();
-	if ((*history)->prev != NULL)
-		*history = (*history)->prev;
-	write(1, (*history)->str, ft_strlen((*history)->str));
-	tc->max_pos = PROMPT_SIZE + ft_strlen((*history)->str);
+	history_str = get_history(history, -1, i);
+	replace_history_str(history, history_str);
+	strlen = ft_strlen(history_str);
+	write(1, history_str, strlen);
+	tc->max_pos = PROMPT_SIZE + strlen;
 	get_cursor_position(tc);
 }
 
@@ -267,7 +277,6 @@ t_history	*init_history(void)
 	if (!(ret_history->str = (char *)malloc(sizeof(char))))
 		exit(1);
 	ret_history->str[0] = '\0';
-	ret_history->copy_str = NULL;
 	ret_history->prev = NULL;
 	ret_history->next = NULL;
 	return (ret_history);
@@ -294,27 +303,17 @@ void	add_front_new_history(t_history **history, t_history *new_history)
 	*history = new_history;
 }
 
-void	update_history(t_history **history)
+void	update_history(t_history **history, int *i)
 {
 	t_history	*new_history;
-	char		*tmp;
 
-	if ((*history)->prev == NULL && !ft_strcmp((*history)->str, ""))
+	if (!ft_strcmp((*history)->str, ""))
 	{
 		return ;
 	}
-	tmp = ft_strdup((*history)->str);
-	if ((*history)->prev != NULL)
-	{
-		free((*history)->str);
-		(*history)->str = ft_strdup((*history)->copy_str);
-	}
-	while ((*history)->prev != NULL)
-		*history = (*history)->prev;
-	(*history)->str = tmp;
-	(*history)->copy_str = ft_strdup(tmp);
 	new_history = init_history();
 	add_front_new_history(history, new_history);
+	*i = 0;
 }
 
 void	init_max_pos(t_termcap *tc)
@@ -322,12 +321,12 @@ void	init_max_pos(t_termcap *tc)
 	tc->max_pos = PROMPT_SIZE;
 }
 
-void	next_command(int c, t_termcap *tc, t_history **history)
+void	next_command(int c, t_termcap *tc, t_history **history, int *i)
 {
 	write(1, &c, sizeof(c));
 	init_max_pos(tc);
 	init_prompt(tc);
-	update_history(history);
+	update_history(history, i);
 }
 
 // read_line.c
@@ -338,12 +337,12 @@ int		putchar_tc(int tc)
 	return (0);
 }
 
-int		divide_cases_by_key(int c, t_termcap *tc, t_history **history)
+int		divide_cases_by_key(int c, t_termcap *tc, t_history **history, int *i)
 {
 	if (c == UP_ARROW)
-		move_previous_history(tc, history);
+		move_previous_history(tc, history, i);
 	else if (c == DOWN_ARROW)
-		move_next_history(tc, history);
+		move_next_history(tc, history, i);
 	else if (c == LEFT_ARROW)
 		move_cursor_to_left(tc);
 	else if (c == RIGHT_ARROW)
@@ -353,7 +352,7 @@ int		divide_cases_by_key(int c, t_termcap *tc, t_history **history)
 	else if (c == EOF_KEY)
 		return (0);//debug用
 	else if (c == NEW_LINE)
-		next_command(c, tc, history);
+		next_command(c, tc, history, i);
 	else
 		put_char(c, tc, history);
 	return (1);//debug用
@@ -397,6 +396,7 @@ void		read_line(t_history **history)
 	char		entrybuf[1024];
 	char		stringbuf[1024];
 	int			c;
+	int			i;
 
 	/* 端末の設定変更 */
 	change_term_config();
@@ -406,10 +406,11 @@ void		read_line(t_history **history)
 
 	tputs(termcap.insert, 1, putchar_tc);
 	init_prompt(&termcap);
+	i = 0;
 	c = 0;
 	while (read(0, &c, sizeof(c)) > 0)
 	{
-		if (divide_cases_by_key(c, &termcap, history) == 0)
+		if (divide_cases_by_key(c, &termcap, history, &i) == 0)
 			break ;
 		c = 0;
 	}

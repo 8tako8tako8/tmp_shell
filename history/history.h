@@ -23,6 +23,7 @@ typedef struct			s_history
 	struct s_history	*prev;
 	struct s_history	*next;
 	char				*str;
+	char				*copy_str;
 }						t_history;
 
 typedef struct			s_termcap
