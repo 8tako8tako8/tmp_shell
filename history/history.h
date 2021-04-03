@@ -14,6 +14,7 @@
 # define UP_ARROW 4283163
 # define DOWN_ARROW 4348699
 # define EOF_KEY 4
+# define TAB_KEY 9
 # define NEW_LINE 10
 # define PROMPT_SIZE 11
 

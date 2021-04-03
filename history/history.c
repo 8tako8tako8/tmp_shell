@@ -1,4 +1,4 @@
-#include "./history.h"
+#include "history.h"
 
 int		putchar_tc(int tc);
 
@@ -302,7 +302,6 @@ void	add_front_new_history(t_history **history, t_history *new_history)
 void	update_history(t_history **history, int *i)
 {
 	t_history	*new_history;
-	char		*tmp;
 
 	if (!ft_strcmp((*history)->str, ""))
 	{
@@ -350,6 +349,8 @@ int		divide_cases_by_key(int c, t_termcap *tc, t_history **history, int *i)
 		return (0);//debug用
 	else if (c == NEW_LINE)
 		next_command(c, tc, history, i);
+	else if (c == TAB_KEY)
+		return (1);
 	else
 		put_char(c, tc, history);
 	return (1);//debug用
@@ -367,21 +368,19 @@ void	change_term_config(void)
 	tcsetattr(0, TCSANOW, &term);
 }
 
-/* void	init_termcap(t_termcap *tc)
+void	init_termcap(t_termcap *tc, char *entrybuf, char *stringbuf)
 {
-	char		entrybuf[1024];
-	char		stringbuf[1024];
-
 	if ((tc->env = getenv("TERM")) == NULL)
 		tc->env = "xterm";
 	tgetent(entrybuf, tc->env);
 	tc->bufptr = stringbuf;	
 	tc->move = tgetstr("cm", &(tc->bufptr));//カーソル位置
-	tc->delete = tgetstr("dc", &(tc->bufptr));//１文字削除
+	tc->delete_char = tgetstr("dc", &(tc->bufptr));//１文字削除
+	tc->delete_line = tgetstr("dl", &(tc->bufptr));//行削除
 	tc->insert = tgetstr("im", &(tc->bufptr));//挿入モード
 	tc->uninsert = tgetstr("ei", &(tc->bufptr));//挿入モード解除
 	tc->max_pos = PROMPT_SIZE;
-} */
+}
 
 void		read_line(t_history **history)
 {
@@ -393,18 +392,9 @@ void		read_line(t_history **history)
 
 	/* 端末の設定変更 */
 	change_term_config();
+	
 	/* termcapの初期化 */
-	//init_termcap(&termcap);//下の初期化を関数でやるとバグ発生、謎
-	if ((termcap.env = getenv("TERM")) == NULL)
-		termcap.env = "xterm";
-	tgetent(entrybuf, termcap.env);
-	termcap.bufptr = stringbuf;	
-	termcap.move = tgetstr("cm", &(termcap.bufptr));//カーソルい移動
-	termcap.delete_char = tgetstr("dc", &(termcap.bufptr));//１文字削除
-	termcap.delete_line = tgetstr("dl", &(termcap.bufptr));//行削除
-	termcap.insert = tgetstr("im", &(termcap.bufptr));//挿入モード
-	termcap.uninsert = tgetstr("ei", &(termcap.bufptr));//挿入モード解除
-	termcap.max_pos = PROMPT_SIZE;
+	init_termcap(&termcap, entrybuf, stringbuf);
 
 	tputs(termcap.insert, 1, putchar_tc);
 	put_prompt();
@@ -431,8 +421,25 @@ void	print_history_str(t_history *history)
 		curr_history = curr_history->prev;
 	while (curr_history != NULL)
 	{
-		printf("\nstr: %s\n", curr_history->str);
+		printf("\nstr: %s, strlen: %d\n", curr_history->str, (int)ft_strlen(curr_history->str));
 		curr_history = curr_history->next;
+	}
+}
+
+void	free_history(t_history **history)
+{
+	t_history	*curr_history;
+	t_history	*tmp;
+
+	curr_history = *history;
+	while (curr_history != NULL)
+	{
+		free(curr_history->str);
+		curr_history->str = NULL;
+		tmp = curr_history->next;
+		free(curr_history);
+		curr_history = NULL;
+		curr_history = tmp;
 	}
 }
 
@@ -445,4 +452,6 @@ int		main(void)
 	read_line(&history);
 
 	print_history_str(history);
+
+	free_history(&history);
 }
